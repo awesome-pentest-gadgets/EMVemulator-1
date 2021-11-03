@@ -7,6 +7,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcB;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,7 +26,8 @@ public class MainActivity extends Activity {
     private NfcAdapter nfcAdapter;                                                              /*!< represents the local NFC adapter */
     private Tag tag;                                                                            /*!< represents an NFC tag that has been discovered */
     private IsoDep tagcomm;                                                                     /*!< provides access to ISO-DEP (ISO 14443-4) properties and I/O operations on a Tag */
-    private String[][] nfctechfilter = new String[][]{new String[]{NfcA.class.getName()}};      /*!<  NFC tech lists */
+    private String[][] nfctechfilter = new String[][]{new String[]{NfcA.class.getName()},
+                                                      new String[]{NfcB.class.getName()}};      /*!<  NFC tech lists */
     private PendingIntent nfcintent;                                                            /*!< reference to a token maintained by the system describing the original data used to retrieve it */
     private TextView cardType;                                                                  /*!< TextView representing type of card */
     private TextView intro;                                                                     /*!< TextView representing simple information about what is going on */
@@ -130,12 +132,15 @@ public class MainActivity extends Activity {
                 temp += "00";
                 if (temp.matches("00 A4 04 00 07 A0 00 00 00 04 10 10 00"))
                     cardtype = "MasterCard";
+                if (temp.matches("00 A4 04 00 07 A0 00 00 00 04 30 60 00"))
+                    cardtype = "Maestro";
                 if (temp.matches("00 A4 04 00 07 A0 00 00 00 03 20 10 00"))
                     cardtype = "Visa Electron";
                 if (temp.matches("00 A4 04 00 07 A0 00 00 00 03 10 10 00"))
                     cardtype = "Visa";
                 recv = transceive(temp);
                 myOutWriter.append(Byte2Hex(recv) + "\n");
+                /*
                 myOutWriter.append(toMagStripeMode() + "\n");
                 recv = transceive("00 B2 01 0C 00");
                 myOutWriter.append(Byte2Hex(recv) + "\n");
@@ -160,7 +165,7 @@ public class MainActivity extends Activity {
                     cardnumber = "Card number: " + Byte2Hex(recv).substring(12, 36).replaceAll(" ", "");
                     cardexpiration = "Card expiration: " + Byte2Hex(recv).substring(40, 43).replaceAll(" ", "") + "/" + Byte2Hex(recv).substring(37, 40).replaceAll(" ", "");
                 }
-
+                */
                 Log.i("EMVemulator", "Done!");
                 myOutWriter.close();
                 fOut.close();
