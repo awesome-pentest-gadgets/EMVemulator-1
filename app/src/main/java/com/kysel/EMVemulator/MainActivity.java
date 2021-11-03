@@ -8,6 +8,7 @@ import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.nfc.tech.NfcA;
 import android.nfc.tech.NfcB;
+import android.nfc.tech.NfcF;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,8 +27,9 @@ public class MainActivity extends Activity {
     private NfcAdapter nfcAdapter;                                                              /*!< represents the local NFC adapter */
     private Tag tag;                                                                            /*!< represents an NFC tag that has been discovered */
     private IsoDep tagcomm;                                                                     /*!< provides access to ISO-DEP (ISO 14443-4) properties and I/O operations on a Tag */
-    private String[][] nfctechfilter = new String[][]{new String[]{NfcA.class.getName()},
-                                                      new String[]{NfcB.class.getName()}};      /*!<  NFC tech lists */
+    private String[][] nfctechfilter = new String[][]{new String[]{NfcB.class.getName()},
+                                                      new String[]{NfcF.class.getName()},
+                                                      new String[]{NfcA.class.getName()}};      /*!<  NFC tech lists */
     private PendingIntent nfcintent;                                                            /*!< reference to a token maintained by the system describing the original data used to retrieve it */
     private TextView cardType;                                                                  /*!< TextView representing type of card */
     private TextView intro;                                                                     /*!< TextView representing simple information about what is going on */
@@ -57,8 +59,21 @@ public class MainActivity extends Activity {
             This method is called when user returns to the activity
          */
         super.onResume();
-        //nfcAdapter.enableReaderMode(this, NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,null);
-        nfcAdapter.enableForegroundDispatch(this, nfcintent, null, nfctechfilter);
+        Bundle options = new Bundle();
+        options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 10000);
+        nfcAdapter.enableReaderMode(this, new NfcAdapter.ReaderCallback() {
+                    @Override
+                    public void onTagDiscovered(Tag tag) {
+                        new CardReader().execute(tag);
+                        System.out.println("NFC onTagDiscovered" + tag.toString());
+                    }
+                },
+                NfcAdapter.FLAG_READER_NFC_A|
+                        NfcAdapter.FLAG_READER_NFC_B|
+                        NfcAdapter.FLAG_READER_NFC_F|
+                        NfcAdapter.FLAG_READER_NFC_V|
+                        NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, options);
+        //nfcAdapter.enableForegroundDispatch(this, nfcintent, null, null);
     }
 
     @Override
@@ -232,7 +247,7 @@ public class MainActivity extends Activity {
             progress.setText("Reading card data ... completed");
             if (error != null)
                 progress.setText(error);
-            Toast.makeText(getApplicationContext(), "Done!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), cardtype+" - Done!", Toast.LENGTH_SHORT).show();
             cardType.setText(cardtype);
             cardNumber.setText(cardnumber);
             cardExpiration.setText(cardexpiration);
