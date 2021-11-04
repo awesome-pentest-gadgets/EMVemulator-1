@@ -70,8 +70,6 @@ public class MainActivity extends Activity {
                 },
                 NfcAdapter.FLAG_READER_NFC_A|
                         NfcAdapter.FLAG_READER_NFC_B|
-                        NfcAdapter.FLAG_READER_NFC_F|
-                        NfcAdapter.FLAG_READER_NFC_V|
                         NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK, options);
         //nfcAdapter.enableForegroundDispatch(this, nfcintent, null, null);
     }
